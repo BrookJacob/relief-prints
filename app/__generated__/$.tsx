@@ -9,7 +9,7 @@
 
       export const projectId = "82a0631c-c19d-4d0a-9e44-882cf1173c19";
 
-      export const lastPublished = "2026-02-10T13:55:43.321Z";
+      export const lastPublished = "2026-02-12T02:06:22.818Z";
 
       export const siteName = undefined;
 

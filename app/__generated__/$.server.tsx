@@ -5,7 +5,17 @@
       import type { PageMeta } from "@webstudio-is/sdk";
       import type { System, ResourceRequest } from "@webstudio-is/sdk";
 export const getResources = (_props: { system: System }) => {
+  const PrintsAPI: ResourceRequest = {
+    name: "PrintsAPI",
+    url: "/api/prints",
+    searchParams: [
+    ],
+    method: "get",
+    headers: [
+    ],
+  }
   const _data = new Map<string, ResourceRequest>([
+    ["PrintsAPI", PrintsAPI],
   ])
   const _action = new Map<string, ResourceRequest>([
   ])

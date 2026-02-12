@@ -4,3 +4,9 @@ publish = "build/client"
 
 [dev]
 command = "react-router dev"
+
+[[redirects]]
+  from = "/api/prints"
+  to = "/.netlify/functions/prints"
+  status = 200
+  force = true
