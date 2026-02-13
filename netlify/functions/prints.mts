@@ -19,7 +19,7 @@ export default async (req: Request, context: Context) => {
         id
         title
         slug
-        status
+        printStatus
         description
         year
         price
