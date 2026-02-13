@@ -14,6 +14,11 @@ type Pages = {
   "/": {
     params: {};
   };
+  "/print/:slug": {
+    params: {
+      "slug": string;
+    };
+  };
   "/sitemap.xml": {
     params: {};
   };
@@ -36,7 +41,11 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/sitemap.xml" | "/coding" | "/prints" | "/robots.txt" | "/*";
+    page: "/" | "/print/:slug" | "/sitemap.xml" | "/coding" | "/prints" | "/robots.txt" | "/*";
+  };
+  "routes/[print].$slug._index.tsx": {
+    id: "routes/[print].$slug._index";
+    page: "/print/:slug";
   };
   "routes/[sitemap.xml]._index.tsx": {
     id: "routes/[sitemap.xml]._index";
@@ -66,6 +75,7 @@ type RouteFiles = {
 
 type RouteModules = {
   "root": typeof import("./app/root.tsx");
+  "routes/[print].$slug._index": typeof import("./app/routes/[print].$slug._index.tsx");
   "routes/[sitemap.xml]._index": typeof import("./app/routes/[sitemap.xml]._index.tsx");
   "routes/[coding]._index": typeof import("./app/routes/[coding]._index.tsx");
   "routes/[prints]._index": typeof import("./app/routes/[prints]._index.tsx");

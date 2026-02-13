@@ -9,7 +9,7 @@
 
       export const projectId = "82a0631c-c19d-4d0a-9e44-882cf1173c19";
 
-      export const lastPublished = "2026-02-12T02:06:22.818Z";
+      export const lastPublished = "2026-02-13T03:13:40.625Z";
 
       export const siteName = undefined;
 
@@ -35,15 +35,15 @@
 
       const Page = (_props: { system: any; }) => {
 return <Body
-className={`w-element`}>
+className={`w-element c68fxpy`}>
 <div
-className={`w-element c1uyowuj c14i7eiu c15ulwb6 c1sv9ebm c1xaawq cuc61go`}>
+className={`w-element c1uyowuj c14i7eiu c15ulwb6 c1sv9ebm c1xaawq c68fxpy`}>
 <div
 className={`w-element c1uyowuj c1sv9ebm c1xaawq c1qm4j82 c1st0lcn c1p2kov4 cvoildy cgmuryo cn6yz7i cwziewr cruh4qp clh81yt`}>
 <div
-className={`w-element c4mqdra c14ti698 cpr4kvk covy8b5 cqctnv6 cjl498a c1eclhvl cycrw65 cythjak c1jgyc2e c1wyaa0n cwziewr`}>
+className={`w-element c4mqdra c14ti698 cpr4kvk covy8b5 cqctnv6 cjl498a c1eclhvl cvoildy cgmuryo cycrw65 cythjak c1jgyc2e c1wyaa0n cwziewr`}>
 <h1
-className={`w-element cjl498a c4uptko c1nrnkrz cu0pw22`}>
+className={`w-element c1nrnkrz`}>
 {"Jacob Brook"}
 </h1>
 </div>

@@ -1,4 +1,4 @@
-// netlify/functions/prints.mts
+// netlify/functions/articles.mts
 import type { Context } from "@netlify/functions";
 
 export default async (req: Request, context: Context) => {
@@ -8,26 +8,23 @@ export default async (req: Request, context: Context) => {
   // 1. Pagination Logic
   const url = new URL(req.url);
   const page = parseInt(url.searchParams.get("page") || "1");
-  const size = parseInt(url.searchParams.get("size") || "12"); // Default 12 per page
+  const size = parseInt(url.searchParams.get("size") || "6"); // Default 6 articles
   const skip = (page - 1) * size;
 
-  // 2. GraphQL Query with Variables
-  // We use $limit and $offset to control the data slice
+  // 2. GraphQL Query
   const query = `
-    query GetPrints($limit: Int!, $offset: Int!) {
-      prints(first: $limit, skip: $offset, orderBy: publishedAt_DESC) {
+    query GetArticles($limit: Int!, $offset: Int!) {
+      articles(first: $limit, skip: $offset, orderBy: publishedDate_DESC) {
         id
         title
         slug
-        status
-        description
-        year
-        price
-        dimensions
-        image { url }
+        publishedDate
+        excerpt
+        techStack
+        repoUrl
+        coverImage { url }
       }
-      # Optional: Get total count for UI (e.g. "Page 1 of 5")
-      printsConnection {
+      articlesConnection {
         aggregate { count }
       }
     }
@@ -54,22 +51,21 @@ export default async (req: Request, context: Context) => {
     if (result.errors) throw new Error(result.errors[0].message);
 
     // 3. Transform Data
-    const cleanPrints = result.data.prints.map((print: any) => ({
-      id: print.id,
-      Title: print.title,
-      Slug: print.slug,
-      Status: print.status,
-      Description: print.description || "",
-      Year: print.year,
-      Price: print.price,
-      Dimensions: print.dimensions,
-      imageUrl: print.image ? print.image.url : null
+    const cleanArticles = result.data.articles.map((article: any) => ({
+      id: article.id,
+      Title: article.title,
+      Slug: article.slug,
+      Date: article.publishedDate,
+      Excerpt: article.excerpt,
+      Stack: article.techStack || [], // Array of strings e.g. ["Remix", "React"]
+      Repo: article.repoUrl,
+      imageUrl: article.coverImage ? article.coverImage.url : null
     }));
 
     return new Response(JSON.stringify({
-      prints: cleanPrints,
+      articles: cleanArticles,
       meta: {
-        total: result.data.printsConnection.aggregate.count,
+        total: result.data.articlesConnection.aggregate.count,
         page: page,
         size: size
       }

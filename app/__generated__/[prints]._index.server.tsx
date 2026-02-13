@@ -7,7 +7,7 @@
 export const getResources = (_props: { system: System }) => {
   const PrintsAPI_1: ResourceRequest = {
     name: "PrintsAPI",
-    url: "/api/prints",
+    url: "https://relief-prints.netlify.app/.netlify/functions/prints",
     searchParams: [
     ],
     method: "get",
