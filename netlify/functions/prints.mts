@@ -15,7 +15,7 @@ export default async (req: Request, context: Context) => {
   // We use $limit and $offset to control the data slice
   const query = `
     query GetPrints($limit: Int!, $offset: Int!) {
-      prints(first: $limit, skip: $offset, orderBy: publishedAt_DESC, where: { display: true }) {
+      prints(first: $limit, skip: $offset, orderBy: createdAt_DESC, where: { display: true }) {
         id
         title
         slug
