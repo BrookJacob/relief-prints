@@ -23,7 +23,8 @@ export default async (req: Request, context: Context) => {
         description
         year
         price
-        dimensions
+        paperDimensions
+        imageDimensions
         image { url }
       }
       # Optional: Get total count for UI (e.g. "Page 1 of 5")
@@ -58,11 +59,12 @@ export default async (req: Request, context: Context) => {
       id: print.id,
       Title: print.title,
       Slug: print.slug,
-      Status: print.status,
+      Status: print.printStatus,
       Description: print.description || "",
       Year: print.year,
       Price: print.price,
-      Dimensions: print.dimensions,
+      paperDimensions: print.paperDimensions,
+      imageDimensions: print.imageDimensions,
       imageUrl: print.image ? print.image.url : null
     }));
 
