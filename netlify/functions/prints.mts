@@ -15,7 +15,7 @@ export default async (req: Request, context: Context) => {
   // We use $limit and $offset to control the data slice
   const query = `
     query GetPrints($limit: Int!, $offset: Int!) {
-      prints(first: $limit, skip: $offset, orderBy: publishedAt_DESC) {
+      prints(first: $limit, skip: $offset, orderBy: publishedAt_DESC, where: { display: true }) {
         id
         title
         slug
@@ -25,6 +25,7 @@ export default async (req: Request, context: Context) => {
         price
         paperDimensions
         imageDimensions
+        editionTotal
         mainImage { url }
       }
       # Optional: Get total count for UI (e.g. "Page 1 of 5")
@@ -65,6 +66,7 @@ export default async (req: Request, context: Context) => {
       Price: print.price,
       paperDimensions: print.paperDimensions,
       imageDimensions: print.imageDimensions,
+      editionTotal: print.editionTotal,
       imageUrl: print.mainImage ? print.mainImage.url : null
     }));
 
