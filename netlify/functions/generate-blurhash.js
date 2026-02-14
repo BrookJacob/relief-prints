@@ -10,10 +10,17 @@ const client = new GraphQLClient(process.env.HYGRAPH_ENDPOINT, {
 });
 
 const UPDATE_ASSET_MUTATION = gql`
-  mutation UpdateAssetBlurhash($id: ID!, $blurhash: String!) {
-    updateAsset(where: { id: $id }, data: { blurhash: $blurhash }) {
+  # Add width and height to the mutation variables
+  mutation UpdateAssetBlurhash($id: ID!, $blurhash: String!, $width: Int!, $height: Int!) {
+    updateAsset(
+      where: { id: $id }, 
+      data: { 
+        blurhash: $blurhash,
+        width: $width,       # Saving width
+        height: $height      # Saving height
+      }
+    ) {
       id
-      blurhash
     }
     publishAsset(where: { id: $id }) {
       id
@@ -71,6 +78,8 @@ exports.handler = async (event) => {
     await client.request(UPDATE_ASSET_MUTATION, {
       id: asset.id,
       blurhash: hash,
+      width: metadata.width,   // Send original width
+      height: metadata.height,  // Send original height
     });
 
     return { statusCode: 200, body: `Success! Hash: ${hash}` };
