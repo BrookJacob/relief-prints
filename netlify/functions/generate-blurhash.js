@@ -1,7 +1,6 @@
 const { GraphQLClient, gql } = require('graphql-request');
 const { encode } = require('blurhash');
 const sharp = require('sharp');
-const fetch = require('node-fetch');
 
 // Initialize Hygraph Client
 const client = new GraphQLClient(process.env.HYGRAPH_ENDPOINT, {
