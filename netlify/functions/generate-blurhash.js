@@ -1,24 +1,32 @@
 const { GraphQLClient, gql } = require('graphql-request');
 const { encode } = require('blurhash');
 const sharp = require('sharp');
+// const fetch = require('node-fetch'); // Uncomment if using Node < 18
 
-// Initialize Hygraph Client
 const client = new GraphQLClient(process.env.HYGRAPH_ENDPOINT, {
   headers: {
     Authorization: `Bearer ${process.env.HYGRAPH_MUTATION_TOKEN}`,
   },
 });
 
+// 1. Fetch only what we need to download the image
+const GET_ASSET_QUERY = gql`
+  query GetAsset($id: ID!) {
+    asset(where: { id: $id }) {
+      id
+      url
+      mimeType
+      blurhash
+    }
+  }
+`;
+
+// 2. Update ONLY the blurhash field
 const UPDATE_ASSET_MUTATION = gql`
-  # Add width and height to the mutation variables
-  mutation UpdateAssetBlurhash($id: ID!, $blurhash: String!, $width: Int!, $height: Int!) {
+  mutation UpdateAssetBlurhash($id: ID!, $blurhash: String!) {
     updateAsset(
       where: { id: $id }, 
-      data: { 
-        blurhash: $blurhash,
-        width: $width,       # Saving width
-        height: $height      # Saving height
-      }
+      data: { blurhash: $blurhash }
     ) {
       id
     }
@@ -29,54 +37,43 @@ const UPDATE_ASSET_MUTATION = gql`
 `;
 
 exports.handler = async (event) => {
-  // 1. Parse the Webhook Payload
-  const payload = JSON.parse(event.body);
-
-  // 1. DEBUG: Log the payload to your Netlify function logs.
-  // This will show you exactly what Hygraph sent.
-  console.log("Incoming Webhook Payload:", JSON.stringify(payload, null, 2));
-
-  const asset = payload.data;
-
-  // If the asset data is missing, OR the mimeType hasn't been generated yet...
-  if (!asset || !asset.mimeType) {
-    console.log("Skipping: Asset data incomplete or MIME type not ready.");
-    return { statusCode: 200, body: 'Skipped: Metadata not ready.' };
-  }
-
-  // 2. Safety Checks
-  // Only proceed if it's an image and the upload is actually done.
-  if (!asset.mimeType.startsWith('image/')) {
-    return { statusCode: 200, body: 'Not an image, skipping.' };
-  }
-  
-  // CRITICAL: Hygraph sends webhooks for every stage. 
-  // We only want to run this when the file is ready.
-  // Check if the trigger operation was an update that set status to uploaded
-  // OR if you are manually triggering this, ensure the url is accessible.
-  // (Simplest check: Does it have a URL and no blurhash yet?)
-  if (!asset.url || asset.blurhash) {
-     return { statusCode: 200, body: 'Already has hash or no URL.' };
-  }
-
   try {
-    console.log(`Processing: ${asset.fileName}`);
+    const payload = JSON.parse(event.body);
+    const assetId = payload.data && payload.data.id;
 
-    // 3. Download the image
+    if (!assetId) {
+      return { statusCode: 200, body: 'Skipped: No ID found.' };
+    }
+
+    // --- FETCH ASSET ---
+    const { asset } = await client.request(GET_ASSET_QUERY, { id: assetId });
+
+    if (!asset || !asset.mimeType || !asset.mimeType.startsWith('image/')) {
+      return { statusCode: 200, body: 'Skipped: Not an image.' };
+    }
+
+    if (asset.blurhash) {
+      return { statusCode: 200, body: 'Skipped: Hash already exists.' };
+    }
+
+    console.log(`Generating Hash for: ${asset.url}`);
+
+    // --- DOWNLOAD ---
     const response = await fetch(asset.url);
-    const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const buffer = Buffer.from(await response.arrayBuffer());
 
-    // 4. Resize and get raw pixels
-    // Blurhash requires raw pixel data (Uint8ClampedArray)
-    // We resize to 32x32 because Blurhash is designed for tiny thumbnails
+    // --- RESIZE & RAW PIXELS ---
+    // We resize to fit INSIDE 32x32. 
+    // This preserves the aspect ratio in the hash without needing original dims.
     const { data, info } = await sharp(buffer)
-      .raw()
       .ensureAlpha()
       .resize(32, 32, { fit: 'inside' })
+      .raw()
       .toBuffer({ resolveWithObject: true });
 
-    // 5. Generate Hash
+    // --- ENCODE ---
+    // Note: info.width/height here are the THUMBNAIL dimensions (e.g., 32x20),
+    // which is exactly what the encoder needs to read the buffer correctly.
     const hash = encode(
       new Uint8ClampedArray(data),
       info.width,
@@ -85,18 +82,16 @@ exports.handler = async (event) => {
       3  // Component Y
     );
 
-    // 6. Save back to Hygraph
+    // --- UPDATE HYGRAPH ---
     await client.request(UPDATE_ASSET_MUTATION, {
       id: asset.id,
       blurhash: hash,
-      width: metadata.width,   // Send original width
-      height: metadata.height,  // Send original height
     });
 
     return { statusCode: 200, body: `Success! Hash: ${hash}` };
 
   } catch (error) {
-    console.error(error);
+    console.error("Error:", error);
     return { statusCode: 500, body: error.message };
   }
 };
