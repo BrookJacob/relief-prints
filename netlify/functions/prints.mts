@@ -26,7 +26,12 @@ export default async (req: Request, context: Context) => {
         paperDimensions
         imageDimensions
         editionTotal
-        mainImage { url }
+        mainImage { 
+          url
+          blurhash
+          width
+          height 
+          }
       }
       # Optional: Get total count for UI (e.g. "Page 1 of 5")
       printsConnection {
@@ -67,7 +72,10 @@ export default async (req: Request, context: Context) => {
       paperDimensions: print.paperDimensions,
       imageDimensions: print.imageDimensions,
       editionTotal: print.editionTotal,
-      imageUrl: print.mainImage ? print.mainImage.url : null
+      imageUrl: print.mainImage ? print.mainImage.url : null,
+      blurhash: print.mainImage ? print.mainImage.blurhash : null,
+      width: print.mainImage ? print.mainImage.width : null,
+      height: print.mainImage ? print.mainImage.height : null
     }));
 
     return new Response(JSON.stringify({
