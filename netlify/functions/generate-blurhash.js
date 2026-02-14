@@ -31,7 +31,18 @@ const UPDATE_ASSET_MUTATION = gql`
 exports.handler = async (event) => {
   // 1. Parse the Webhook Payload
   const payload = JSON.parse(event.body);
+
+  // 1. DEBUG: Log the payload to your Netlify function logs.
+  // This will show you exactly what Hygraph sent.
+  console.log("Incoming Webhook Payload:", JSON.stringify(payload, null, 2));
+
   const asset = payload.data;
+
+  // If the asset data is missing, OR the mimeType hasn't been generated yet...
+  if (!asset || !asset.mimeType) {
+    console.log("Skipping: Asset data incomplete or MIME type not ready.");
+    return { statusCode: 200, body: 'Skipped: Metadata not ready.' };
+  }
 
   // 2. Safety Checks
   // Only proceed if it's an image and the upload is actually done.
